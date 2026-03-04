@@ -25,7 +25,9 @@ import com.auth.authentication.repository.RefreshTokenRepository;
 import com.auth.authentication.repository.UserRepository;
 import com.auth.authentication.security.JwtService;
 import com.auth.authentication.service.AuthService;
+import com.auth.authentication.service.CookieService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -45,9 +47,11 @@ public class AuthController {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
+    private final CookieService cookieService;
+
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(
-            @RequestBody LoginRequest loginRequest) {
+            @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         Authentication authenticate = authenticate(loginRequest);
         User user = userRepository.findByEmail(loginRequest.email())
                 .orElseThrow(() -> new BadCredentialsException("Ivalid email or password"));
@@ -68,6 +72,11 @@ public class AuthController {
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user, refreshTokenOb.getJti());
+
+        // use cookie service to attach refresh token to the cookie
+
+        cookieService.attachRefreshCookie(response, refreshToken, (int) jwtService.getRefreshTokenExpiration());
+        cookieService.addNoStoreHeaders(response);
 
         TokenResponse tokenResponse = TokenResponse.of(accessToken, refreshToken, jwtService.getAccessTokenExpiration(),
                 modelMapper.map(user, UserDTO.class));
