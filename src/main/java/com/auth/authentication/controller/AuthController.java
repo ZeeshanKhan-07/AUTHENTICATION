@@ -193,7 +193,7 @@ public class AuthController {
             }
         }
 
-        if (body != null && body.refreshToken() != null && body.refreshToken().isBlank()) {
+        if (body != null && body.refreshToken() != null && !body.refreshToken().isBlank()) {
             return Optional.of(body.refreshToken());
         }
 

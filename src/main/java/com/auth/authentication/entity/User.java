@@ -15,6 +15,8 @@ import com.auth.authentication.enums.Provider;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,6 +26,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,6 +37,7 @@ import jakarta.persistence.JoinColumn;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "user")
 public class User implements UserDetails {
 
@@ -57,7 +61,10 @@ public class User implements UserDetails {
 
     private Instant updatedAt = Instant.now();
 
+    @Enumerated(EnumType.STRING)
     private Provider provider = Provider.LOCAL;
+
+    private  String providerId;
 
     @ManyToAny(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
